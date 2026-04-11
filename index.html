@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>%PRODUCT_NAME%</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html, body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #000;
+      }
+
+      #unity-container {
+        width: 100%;
+        height: 100%;
+        position: relative;
+      }
+
+      #unity-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        background: #000;
+      }
+
+      /* ── Loading overlay ── */
+      #unity-loading-bar {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: #0a0a0a;
+        z-index: 10;
+        gap: 20px;
+        transition: opacity 0.4s ease;
+      }
+
+      #unity-loading-bar.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      #unity-logo {
+        width: 120px;
+        opacity: 0.6;
+      }
+
+      #unity-progress-bar-empty {
+        width: 240px;
+        height: 4px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      #unity-progress-bar-full {
+        height: 100%;
+        width: 0%;
+        background: #fff;
+        border-radius: 2px;
+        transition: width 0.2s ease;
+      }
+
+      #unity-loading-text {
+        font-family: 'Courier New', monospace;
+        font-size: 11px;
+        letter-spacing: 0.15em;
+        color: rgba(255,255,255,0.3);
+        text-transform: uppercase;
+      }
+
+      /* ── Warning banner (desktop fullscreen prompt) ── */
+      #unity-warning {
+        position: absolute;
+        top: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.75);
+        color: #fff;
+        padding: 8px 20px;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        pointer-events: none;
+        z-index: 20;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      #unity-warning.visible {
+        opacity: 1;
+      }
+
+      /* ── Footer ── */
+      #unity-footer {
+        position: absolute;
+        bottom: 12px;
+        right: 16px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        z-index: 5;
+      }
+
+      #unity-fullscreen-button {
+        width: 32px;
+        height: 32px;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+      }
+
+      #unity-fullscreen-button:hover {
+        background: rgba(255,255,255,0.18);
+      }
+
+      #unity-fullscreen-button img {
+        width: 16px;
+        height: 16px;
+        filter: invert(1);
+        opacity: 0.7;
+      }
+
+      /* ══════════════════════════════════════════
+         ROTATE OVERLAY — portrait → landscape
+         ══════════════════════════════════════════ */
+      #rotate-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: #0a0a0a;
+        color: #fff;
+        z-index: 9999;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 28px;
+        text-align: center;
+        padding: 40px;
+        font-family: 'Courier New', monospace;
+      }
+
+      /* Show the overlay in portrait on small (mobile) screens */
+      @media screen and (orientation: portrait) and (max-width: 1024px) {
+        #rotate-overlay {
+          display: flex;
+        }
+      }
+
+      .rotate-icon {
+        width: 72px;
+        height: 72px;
+        animation: spin-phone 2.4s ease-in-out infinite;
+      }
+
+      @keyframes spin-phone {
+        0%   { transform: rotate(0deg);   }
+        30%  { transform: rotate(0deg);   }
+        60%  { transform: rotate(90deg);  }
+        90%  { transform: rotate(90deg);  }
+        100% { transform: rotate(0deg);   }
+      }
+
+      .rotate-title {
+        font-size: clamp(1rem, 5vw, 1.5rem);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.9);
+      }
+
+      .rotate-sub {
+        font-size: clamp(0.7rem, 3vw, 0.85rem);
+        letter-spacing: 0.1em;
+        color: rgba(255,255,255,0.35);
+        text-transform: uppercase;
+      }
+
+      /* Subtle scanline texture */
+      #rotate-overlay::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(255,255,255,0.015) 2px,
+          rgba(255,255,255,0.015) 4px
+        );
+        pointer-events: none;
+      }
+    </style>
+  </head>
+
+  <body>
+
+    <!-- ── Rotate overlay (portrait blocker) ── -->
+    <div id="rotate-overlay">
+      <svg class="rotate-icon" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Phone outline -->
+        <rect x="22" y="8" width="28" height="48" rx="5" stroke="rgba(255,255,255,0.7)" stroke-width="2.5"/>
+        <line x1="22" y1="18" x2="50" y2="18" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+        <line x1="22" y1="54" x2="50" y2="54" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+        <circle cx="36" cy="60" r="2" fill="rgba(255,255,255,0.5)"/>
+        <!-- Rotate arrow -->
+        <path d="M54 30 Q64 36 54 44" stroke="rgba(255,255,255,0.55)" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <polyline points="51,42 54,44 52,47" stroke="rgba(255,255,255,0.55)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="rotate-title">Rotate your device</span>
+      <span class="rotate-sub">This game requires landscape&nbsp;mode</span>
+    </div>
+
+    <!-- ── Unity container ── -->
+    <div id="unity-container">
+      <canvas id="unity-canvas" tabindex="-1"></canvas>
+
+      <!-- Loading bar -->
+      <div id="unity-loading-bar">
+        <img id="unity-logo" src="TemplateData/unity-logo-dark.png" alt="Unity" />
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
+        </div>
+        <span id="unity-loading-text">Loading…</span>
+      </div>
+
+      <!-- Warning toast -->
+      <div id="unity-warning"></div>
+
+      <!-- Footer -->
+      <div id="unity-footer">
+        <div id="unity-fullscreen-button" title="Fullscreen">
+          <img src="TemplateData/fullscreen-button.png" alt="Fullscreen" />
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ── Orientation lock (waar ondersteund — niet iOS Safari) ──
+      async function tryLockLandscape() {
+        try {
+          if (screen.orientation && screen.orientation.lock) {
+            await screen.orientation.lock("landscape");
+          }
+        } catch (e) {
+          // Niet gelukt (bijv. iOS Safari) — CSS overlay neemt het over
+        }
+      }
+
+      // Probeer te locken zodra de gebruiker de pagina aanraakt
+      document.addEventListener("touchstart", tryLockLandscape, { once: true });
+      document.addEventListener("click",      tryLockLandscape, { once: true });
+
+      // ── Unity loader ──
+      var container   = document.querySelector("#unity-container");
+      var canvas      = document.querySelector("#unity-canvas");
+      var loadingBar  = document.querySelector("#unity-loading-bar");
+      var progressBar = document.querySelector("#unity-progress-bar-full");
+      var warningBanner = document.querySelector("#unity-warning");
+      var loadingText = document.querySelector("#unity-loading-text");
+
+      function showBanner(msg, type) {
+        warningBanner.innerHTML = msg;
+        warningBanner.classList.add("visible");
+        if (type === "error") {
+          warningBanner.style.background = "rgba(180,40,40,0.85)";
+        }
+        setTimeout(() => warningBanner.classList.remove("visible"), 5000);
+      }
+
+      var buildUrl    = "Build";
+      var loaderUrl   = buildUrl + "/SpriteFlight 2.0.0.loader.js";
+      var config = {
+        dataUrl:            buildUrl + "/SpriteFlight 2.0.0.data.br",
+        frameworkUrl:       buildUrl + "/SpriteFlight 2.0.0.framework.js.br",
+        codeUrl:            buildUrl + "/SpriteFlight 2.0.0.wasm.br",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName:        "Super Star Interactive",
+        productName:        "Sprite Flight",
+        productVersion:     "2.0.0",
+        showBanner:         showBanner,
+      };
+
+      // Wasm streaming (betere performance)
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        var meta = document.createElement("meta");
+        meta.name    = "viewport";
+        meta.content = "width=device-width, height=device-height, initial-scale=1.0, user-scalable=no";
+        document.head.appendChild(meta);
+      }
+
+      var script = document.createElement("script");
+      script.src  = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          progressBar.style.width = (100 * progress) + "%";
+          loadingText.textContent = Math.round(progress * 100) + "%";
+        }).then((unityInstance) => {
+          loadingBar.classList.add("hidden");
+
+          // Fullscreen knop
+          document.querySelector("#unity-fullscreen-button").onclick = () => {
+            unityInstance.SetFullscreen(1);
+          };
+        }).catch((message) => {
+          alert(message);
+        });
+      };
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>
