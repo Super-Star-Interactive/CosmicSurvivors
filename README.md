@@ -20,13 +20,16 @@ One hit ends the run so every second counts.
 
 ---
 
-## 🛠️ Technology
+## 🛠️ Systems and Technology
 Cosmic Survivors is built using:
 
 - **Unity 6000.3.8f1**
 - C# scripting
 - Custom-made assets and effects
 - Unity UI Toolkit for interface elements
+
+Cosmic Suvivors uses:
+- SSVNS 2, the version numbering system made by Super Star Interacive. Read the SSVNS2.md file for more information
 
 ---
 
