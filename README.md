@@ -35,19 +35,14 @@ Cosmic Suvivors uses:
 
 ## 📦 Releases
 All downloadable builds are available under the **Releases** section of this repository.  
-Check the latest release to play the newest version of Cosmic Survivors.
-Or go to our Itch.io! superstarinteractive.itch.io/cosmicsurvivors
+Check the latest release to download & play the newest version of Cosmic Survivors. (Please use VS Code Live Server, windows version coming soon)
+Or go to our [Itch.io](https://superstarinteractive.itch.io/cosmicsurvivors)! 
 
 ---
 
 ## 📅 Roadmap
-The game is actively being improved. Planned or potential updates include:
-
-- Settings Menu
-- Health Bar
-- Overhaul of obstacles
-- Shoot System
-- Shop
+The game is actively being improved. Our plan is to inprove it till around Mid June.
+For planned features please refer to [our Itch.io devlog post](https://superstarinteractive.itch.io/cosmicsurvivors/devlog/1485776/roadmap-and-further-development)
 
 ---
 
