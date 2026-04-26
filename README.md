@@ -35,8 +35,15 @@ Cosmic Suvivors uses:
 
 ## 📦 Releases
 All downloadable builds are available under the **Releases** section of this repository.  
-Check the latest release to download & play the newest version of Cosmic Survivors. (Please use VS Code Live Server, windows version coming soon)
+Check the latest release to download & play the newest version of Cosmic Survivors.
 Or go to our [Itch.io](https://superstarinteractive.itch.io/cosmicsurvivors)! 
+
+---
+
+## How to play?
+Make an itch.io account and make a private game with your selected version. The resolution is 1280 x 720.
+Do not make this public in terms of the copyright law, all rights reserved.
+Windows downloadable version coming soon!
 
 ---
 
